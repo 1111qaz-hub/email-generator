@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WhatsApp 外贸开发消息生成器</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, "Microsoft YaHei", sans-serif;
+      background: #f5f5f5;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      padding: 20px 10px;
+    }
+    .container { max-width: 550px; width: 100%; }
+    .header {
+      background: #25D366;
+      color: white;
+      padding: 18px 20px;
+      border-radius: 14px;
+      margin-bottom: 15px;
+      text-align: center;
+    }
+    .header h1 { font-size: 20px; margin-bottom: 4px; }
+    .header p { font-size: 12px; opacity: 0.9; }
+
+    .card {
+      background: white;
+      border-radius: 14px;
+      padding: 18px;
+      margin-bottom: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+    .card h2 {
+      font-size: 15px;
+      margin-bottom: 12px;
+      color: #333;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .card h2 .badge {
+      font-size: 11px;
+      font-weight: normal;
+      color: #25D366;
+      background: #e6f9ee;
+      padding: 3px 8px;
+      border-radius: 10px;
+    }
+
+    label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: #555;
+      margin-bottom: 4px;
+      margin-top: 10px;
+    }
+    input, textarea, select {
+      width: 100%;
+      padding: 10px 12px;
+      border: 2px solid #ddd;
+      border-radius: 8px;
+      font-size: 14px;
+      outline: none;
+      font-family: inherit;
+    }
+    input:focus, textarea:focus, select:focus {
+      border-color: #25D366;
+    }
+
+    .btn {
+      width: 100%;
+      padding: 14px;
+      background: #25D366;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 15px;
+    }
+    .btn:active { background: #1db954; }
+    .btn:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+
+    .clear-btn {
+      background: #f0f0f0;
+      color: #555;
+      margin-top: 8px;
+      font-size: 14px;
+      font-weight: normal;
+    }
+    .clear-btn:active { background: #ddd; }
+
+    .style-selector {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+      flex-wrap: wrap;
+    }
+    .style-btn {
+      padding: 8px 14px;
+      border: 2px solid #ddd;
+      border-radius: 20px;
+      font-size: 13px;
+      cursor: pointer;
+      background: white;
+      color: #555;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+    .style-btn.active {
+      background: #25D366;
+      color: white;
+      border-color: #25D366;
+      font-weight: 600;
+    }
+
+    .result-box {
+      background: #f0faf3;
+      border: 1px solid #d4edda;
+      border-radius: 10px;
+      padding: 15px;
+      font-size: 13px;
+      line-height: 1.7;
+      white-space: pre-wrap;
+      word-break: break-word;
+      min-height: 100px;
+      color: #333;
+    }
+
+    .copy-btn {
+      background: #128C7E;
+      margin-top: 8px;
+    }
+    .copy-btn:active { background: #0e7265; }
+
+    .disclaimer {
+      text-align: center;
+      font-size: 11px;
+      color: #999;
+      margin-top: 15px;
+      line-height: 1.6;
+    }
+    .tip {
+      text-align: center;
+      font-size: 11px;
+      color: #999;
+      margin-top: 10px;
+      line-height: 1.6;
+    }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>💬 WhatsApp 外贸开发消息生成器</h1>
+    <p>填入信息 → 生成口语化消息 → 复制发客户</p>
+  </div>
+
+  <div class="card">
+    <h2>1. 客户信息 <span class="badge">选填，不知道就留空</span></h2>
+
+    <label>客户名字（不知道就留空）</label>
+    <input type="text" id="contactName" placeholder="例如：Rajesh">
+
+    <label>客户公司名（不知道就留空）</label>
+    <input type="text" id="companyName" placeholder="例如：Green Garden LLC">
+
+    <label>你从哪里找到他的？</label>
+    <select id="foundFromSelect" onchange="toggleCustomSource()">
+      <option value="LinkedIn">LinkedIn</option>
+      <option value="Instagram">Instagram</option>
+      <option value="Facebook">Facebook</option>
+      <option value="TikTok">TikTok</option>
+      <option value="YouTube">YouTube</option>
+      <option value="Telegram">Telegram</option>
+      <option value="Google search">Google search</option>
+      <option value="WhatsApp outbound">WhatsApp outbound</option>
+      <option value="your website">Your website</option>
+      <option value="a trade show">A trade show</option>
+      <option value="Other">Other</option>
+    </select>
+    <div id="customSourceWrapper" class="hidden" style="margin-top:8px;">
+      <label>请填写具体来源</label>
+      <input type="text" id="customSource" placeholder="例如：Google Maps, industry directory...">
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>2. 你的信息 <span class="badge">必填，只填一次自动保存</span></h2>
+
+    <label>你的名字 <span style="color:red;">*</span></label>
+    <input type="text" id="yourName" placeholder="输入你的名字">
+
+    <label>你的公司名 <span style="color:red;">*</span></label>
+    <input type="text" id="yourCompany" placeholder="输入你的公司名">
+
+    <label>你卖什么产品（一句话） <span style="color:red;">*</span></label>
+    <input type="text" id="products" placeholder="例如：LED lights, artificial plants">
+  </div>
+
+  <div class="card">
+    <h2>3. 消息风格</h2>
+    <div class="style-selector" id="styleSelector">
+      <button class="style-btn active" data-style="friendly" onclick="selectStyle('friendly')">😊 友好型</button>
+      <button class="style-btn" data-style="short" onclick="selectStyle('short')">⚡ 超简短</button>
+      <button class="style-btn" data-style="professional" onclick="selectStyle('professional')">💼 专业型</button>
+    </div>
+  </div>
+
+  <button class="btn" id="generateBtn" onclick="generateMessage()" disabled>🚀 生成 WhatsApp 消息</button>
+  <button class="btn clear-btn" onclick="clearAll()">🔄 一键清空</button>
+
+  <div class="card" id="resultCard" style="display:none;">
+    <h2>📱 你的消息</h2>
+    <div class="result-box" id="resultBox"></div>
+    <button class="btn copy-btn" onclick="copyResult()">📋 一键复制</button>
+  </div>
+
+  <div class="disclaimer">
+    ⚠️ 本工具为本地 HTML 网页，仅生成 WhatsApp 开发文案，<br>
+    无爬虫、不采集客户信息、无需联网，下载后双击浏览器直接打开使用。
+  </div>
+  <div class="tip">
+    💡提示：WhatsApp陌生开发尽量控制消息3‑4行以内，降低账号风控封禁风险。
+  </div>
+</div>
+
+<script>
+let currentStyle = 'friendly';
+
+function toggleCustomSource() {
+  const select = document.getElementById('foundFromSelect');
+  const customWrapper = document.getElementById('customSourceWrapper');
+  if (select.value === 'Other') {
+    customWrapper.classList.remove('hidden');
+  } else {
+    customWrapper.classList.add('hidden');
+  }
+}
+
+function selectStyle(style) {
+  currentStyle = style;
+  document.querySelectorAll('.style-btn').forEach(btn => {
+    btn.classList.remove('active');
+    if (btn.dataset.style === style) {
+      btn.classList.add('active');
+    }
+  });
+}
+
+// ==================== 本地保存 ====================
+function savePersonalInfo() {
+  const personalInfo = {
+    yourName: document.getElementById('yourName').value.trim(),
+    yourCompany: document.getElementById('yourCompany').value.trim(),
+    products: document.getElementById('products').value.trim()
+  };
+  localStorage.setItem('whatsapp_gen_v3', JSON.stringify(personalInfo));
+}
+
+function loadPersonalInfo() {
+  const saved = localStorage.getItem('whatsapp_gen_v3');
+  if (saved) {
+    try {
+      const info = JSON.parse(saved);
+      document.getElementById('yourName').value = info.yourName || '';
+      document.getElementById('yourCompany').value = info.yourCompany || '';
+      document.getElementById('products').value = info.products || '';
+    } catch(e) {
+      document.getElementById('yourName').value = '';
+      document.getElementById('yourCompany').value = '';
+      document.getElementById('products').value = '';
+    }
+  }
+}
+
+// ==================== 必填校验 ====================
+function checkRequiredFields() {
+  const yourName = document.getElementById('yourName').value.trim();
+  const yourCompany = document.getElementById('yourCompany').value.trim();
+  const products = document.getElementById('products').value.trim();
+  const generateBtn = document.getElementById('generateBtn');
+
+  if (yourName && yourCompany && products) {
+    generateBtn.disabled = false;
+  } else {
+    generateBtn.disabled = true;
+  }
+}
+
+// ==================== 清空表单 ====================
+function clearAll() {
+  document.getElementById('contactName').value = '';
+  document.getElementById('companyName').value = '';
+  document.getElementById('customSource').value = '';
+  document.getElementById('resultCard').style.display = 'none';
+  document.getElementById('resultBox').textContent = '';
+  checkRequiredFields();
+}
+
+// ==================== 生成消息 ====================
+function generateMessage() {
+  const contactName = document.getElementById('contactName').value.trim();
+  const companyName = document.getElementById('companyName').value.trim();
+  const yourName = document.getElementById('yourName').value.trim();
+  const yourCompany = document.getElementById('yourCompany').value.trim();
+  const products = document.getElementById('products').value.trim();
+
+  const sourceSelect = document.getElementById('foundFromSelect');
+  let foundFrom = sourceSelect.value;
+  if (foundFrom === 'Other') {
+    foundFrom = document.getElementById('customSource').value.trim() || 'other sources';
+  }
+
+  savePersonalInfo();
+
+  let message = '';
+  if (currentStyle === 'friendly') {
+    message = generateFriendlyMessage(contactName, companyName, yourName, yourCompany, products, foundFrom);
+  } else if (currentStyle === 'short') {
+    message = generateShortMessage(contactName, companyName, yourName, yourCompany, products, foundFrom);
+  } else {
+    message = generateProfessionalMessage(contactName, companyName, yourName, yourCompany, products, foundFrom);
+  }
+
+  document.getElementById('resultBox').textContent = message;
+  document.getElementById('resultCard').style.display = 'block';
+  document.getElementById('resultCard').scrollIntoView({ behavior: 'smooth' });
+}
+
+// ==================== 模板辅助 ====================
+function getOpening(contactName, companyName, style) {
+  if (contactName) {
+    if (style === 'friendly') return `Hi ${contactName} 👋`;
+    if (style === 'short') return `Hey ${contactName}`;
+    if (style === 'professional') return `Hello ${contactName},`;
+  }
+  if (companyName) {
+    if (style === 'friendly') return `Hi ${companyName} team 👋`;
+    if (style === 'short') return `Hey ${companyName} team`;
+    if (style === 'professional') return `Hello ${companyName} team,`;
+  }
+  // 双空
+  if (style === 'friendly') return `Hi there 👋`;
+  if (style === 'short') return `Hey there`;
+  if (style === 'professional') return `Hello,`;
+}
+
+function getSourceLine(contactName, companyName, foundFrom) {
+  // 只要 contactName 或 companyName 任意一个填了，才输出来源行
+  if (contactName || companyName) {
+    return `Found you on ${foundFrom}.`;
+  }
+  // 都为空，不输出
+  return '';
+}
+
+// ==================== 三种模板 ====================
+function generateFriendlyMessage(contactName, companyName, yourName, yourCompany, products, foundFrom) {
+  const opening = getOpening(contactName, companyName, 'friendly');
+  const sourceLine = getSourceLine(contactName, companyName, foundFrom);
+  const lines = [
+    opening,
+    `I'm ${yourName} from ${yourCompany} in China. We do ${products}.`
+  ];
+  if (sourceLine) {
+    lines.push(sourceLine);
+  }
+  lines.push(
+    'Think we might be a good match.',
+    'Want me to send some photos and details?'
+  );
+  return lines.join('\n');
+}
+
+function generateShortMessage(contactName, companyName, yourName, yourCompany, products, foundFrom) {
+  const opening = getOpening(contactName, companyName, 'short');
+  const sourceLine = getSourceLine(contactName, companyName, foundFrom);
+  const lines = [
+    opening,
+    `I'm ${yourName} from ${yourCompany} (China). We supply ${products}.`
+  ];
+  if (sourceLine) {
+    lines.push(sourceLine);
+  }
+  lines.push('Want to see our products?');
+  return lines.join('\n');
+}
+
+function generateProfessionalMessage(contactName, companyName, yourName, yourCompany, products, foundFrom) {
+  const opening = getOpening(contactName, companyName, 'professional');
+  const sourceLine = getSourceLine(contactName, companyName, foundFrom);
+  const lines = [
+    opening,
+    `This is ${yourName} from ${yourCompany}, China. We supply ${products}.`
+  ];
+  if (sourceLine) {
+    lines.push(sourceLine);
+  }
+  lines.push(
+    'Happy to share our catalogue if useful.',
+    `Best, ${yourName}`
+  );
+  return lines.join('\n');
+}
+
+// ==================== 复制 ====================
+function copyResult() {
+  const text = document.getElementById('resultBox').textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    alert('✅ 已复制，去 WhatsApp 粘贴发送吧');
+  }).catch(() => {
+    const area = document.createElement('textarea');
+    area.value = text;
+    document.body.appendChild(area);
+    area.select();
+    document.execCommand('copy');
+    document.body.removeChild(area);
+    alert('✅ 已复制');
+  });
+}
+
+// ==================== 初始化 ====================
+document.addEventListener('DOMContentLoaded', function() {
+  loadPersonalInfo();
+  checkRequiredFields();
+  const requiredInputs = ['yourName', 'yourCompany', 'products'];
+  requiredInputs.forEach(id => {
+    document.getElementById(id).addEventListener('input', function() {
+      savePersonalInfo();
+      checkRequiredFields();
+    });
+  });
+});
+</script>
+</body>
+</html>
